@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "imgs2gray"
+version = "0.1.0"
+description = ""
+authors = ["HotariTobu <hotari24tools@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+opencv-python = "^4.10.0.82"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
