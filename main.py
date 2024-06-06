@@ -20,7 +20,7 @@ def process(input_file_path: Path, output_file_path: Path):
     try:
         with Image.open(input_file_path) as color_image:
             grayscale_image = color_image.convert("L")
-            grayscale_image.save(output_file_path, color_image.format)
+            grayscale_image.save(output_file_path)
 
     except Exception as e:
         print(f"Failed to convert image file: {e}")
