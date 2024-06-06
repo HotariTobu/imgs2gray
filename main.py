@@ -1,71 +1,64 @@
 import argparse
-import shutil
 
-from pathlib import Path
+from PIL import Image
 from typing import List
+from wcmatch import glob
+from wcmatch.pathlib import Path
 
-def process(input_file_path: Path, output_dir_path: Path):
+
+def process(input_file_path: Path, output_file_path: Path):
     """process a file
 
     Args:
-        input_file_path (Path): path to input pdf
-        output_dir_path (Path): path to output dir
+        input_file_path (Path): path to input color image file
+        output_dir_path (Path): path to output grayscale image file
 
     Returns:
-        bool: True if succeed for opening pdf, otherwise False
+        bool: True if succeed, otherwise False
     """
 
     try:
-        # Open pdf
-        pdf_reader = PdfReader(input_file_path)
+        with Image.open(input_file_path) as color_image:
+            grayscale_image = color_image.convert("L")
+            grayscale_image.save(output_file_path, color_image.format)
 
     except Exception as e:
-        # When cannot open
-        print(f"Failed to read PDF file: {e}")
+        print(f"Failed to convert image file: {e}")
 
         return False
 
-    count = 0
-
-    # Get images on each page and write them
-    for page in pdf_reader.pages:
-        for image in page.images:
-            output_file_path = output_dir_path / f"{count}_{image.name}"
-
-            try:
-                with open(output_file_path, "wb") as f:
-                    f.write(image.data)
-            except Exception as e:
-                print(f"Failed to write image file: {e}")
-
-            count += 1
-
     return True
 
+
 # Parse command-line parameters
-parser = argparse.ArgumentParser(description='Convert color image files into grayscale image files')
-parser.add_argument('input_path', type=Path, help='path to the input image files or directory')
+parser = argparse.ArgumentParser(
+    description="Convert color image files into grayscale image files"
+)
+parser.add_argument(
+    "input_path", type=Path, help="path to the input image files or directory"
+)
 args = parser.parse_args()
 
 input_path: Path = args.input_path
 input_file_paths: List[Path] = []
 
 if input_path.is_dir():
-    for input_file_path in input_path.glob('*.{png,jpg,jpeg,gif,bmp}'):
+    for input_file_path in input_path.glob(
+        "*.{png,jpg,jpeg,gif,bmp}", flags=glob.BRACE
+    ):
         input_file_paths.append(input_file_path)
 else:
     input_file_paths.append(input_path)
 
 for input_file_path in input_file_paths:
-    output_dir_path = input_file_path.with_suffix('')
-    if output_dir_path.exists():
-        print('Directory already exists:', output_dir_path)
-        conf = input('Overwrite? (Y/n): ')
-        if conf != 'Y':
+    stem = input_file_path.stem
+    output_file_path = input_file_path.with_stem(f"{stem}_gs")
+    if output_file_path.exists():
+        print("File already exists:", output_file_path)
+        conf = input("Overwrite? (Y/n): ")
+        if conf != "Y":
             continue
 
-        shutil.rmtree(output_dir_path)
+        output_file_path.unlink()
 
-    output_dir_path.mkdir()
-
-    process(input_file_path, output_dir_path)
+    process(input_file_path, output_file_path)
