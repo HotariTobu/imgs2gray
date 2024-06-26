@@ -37,9 +37,13 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     "input_path", type=Path, help="path to the input image files or directory"
 )
+parser.add_argument(
+    "-o", "--output", dest="output_path", type=Path, help="path to the output directory"
+)
 args = parser.parse_args()
 
 input_path: Path = args.input_path
+output_path: Path | None = args.output_path
 input_file_paths: List[Path] = []
 
 if input_path.is_dir():
@@ -50,9 +54,18 @@ if input_path.is_dir():
 else:
     input_file_paths.append(input_path)
 
+if output_path is not None and not output_path.exists():
+    raise Exception("Output directory does not exist.")
+
 for input_file_path in input_file_paths:
     stem = input_file_path.stem
-    output_file_path = input_file_path.with_stem(f"{stem}_gs")
+
+    if output_path is None:
+        output_file_path = input_file_path.with_stem(f"{stem}_gs")
+    else:
+        suffix = input_file_path.suffix
+        output_file_path = output_path / f"{stem}_gs{suffix}"
+
     if output_file_path.exists():
         print("File already exists:", output_file_path)
         conf = input("Overwrite? (Y/n): ")
