@@ -44,7 +44,7 @@ input_file_paths: List[Path] = []
 
 if input_path.is_dir():
     for input_file_path in input_path.glob(
-        "*.{png,jpg,jpeg,gif,bmp}", flags=glob.BRACE
+        "*.{png,jpg,jpeg,gif,bmp}", flags=glob.BRACE | glob.IGNORECASE
     ):
         input_file_paths.append(input_file_path)
 else:
